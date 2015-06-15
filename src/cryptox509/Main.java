@@ -17,32 +17,13 @@ public class Main {
     private static final String keystore = "keys.jks";
     
     public static void main(String[] args) {
-            gen = init(args[0]);
-        try {
-            
-            //Generate ROOT certificate
-            CertAndKeyGen keyGen = new CertAndKeyGen("RSA", "SHA1WithRSA", null);
-            keyGen.generate(1024);
-            PrivateKey rootPrivateKey = keyGen.getPrivateKey();
-
-            long validity =  gen.getEndDate().getTime() - gen.getStartDate().getTime();
-            X509Certificate rootCertificate = keyGen.getSelfCertificate(new X500Name("CN="+gen.getIssuer()), gen.getStartDate(), validity/1000);
-            rootCertificate = gen.createSignedCertificate(rootCertificate, rootCertificate, rootPrivateKey);
-            
-            X509Certificate[] chain = new X509Certificate[1];
-            chain[0] = rootCertificate;
-            
-            char[] password = checkOwnerPassword();
-            
-            //Store the certificate to a pem file
-            gen.storeKeyAndCertificate(alias, password, keystore, rootPrivateKey, chain);
-            gen.printCertificateToPEM(rootCertificate, "cert.pem");
-            //Reload the keystore and display key and certificate chain info
-            gen.loadAndDisplay(alias, password, keystore);
-            //Clear the keystore from certificate
-            gen.clearKeyStore(alias, password, keystore);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+       
+        switch (args[0]) {
+            case "-g": 
+                generateCert(args[1]);
+             break;
+            default: System.err.println("Not a valid command.");
+                     System.exit(0);
         }
     }
 
@@ -58,5 +39,32 @@ public class Main {
             }
         
        
+   }
+   
+   private static void generateCert(String path){
+            gen = init(path);
+        try {
+            
+            //Generate ROOT certificate
+            CertAndKeyGen keyGen = new CertAndKeyGen("RSA", "SHA1WithRSA", null);
+            keyGen.generate(1024);
+            PrivateKey rootPrivateKey = keyGen.getPrivateKey();
+
+            long validity =  gen.getEndDate().getTime() - gen.getStartDate().getTime();
+            X509Certificate rootCertificate = keyGen.getSelfCertificate(new X500Name("CN="+gen.getIssuer()), gen.getStartDate(), validity/1000);
+            rootCertificate = gen.createSignedCertificate(rootCertificate, rootCertificate, rootPrivateKey);
+            
+            X509Certificate[] chain = new X509Certificate[1];
+            chain[0] = rootCertificate;
+            
+            char[] password = checkOwnerPassword();
+
+            gen.storeKeyAndCertificate(alias, password, keystore, rootPrivateKey, chain);
+            gen.printCertificateToPEM(rootCertificate, "cert.pem");
+            gen.loadAndDisplay(alias, password, keystore);
+            gen.clearKeyStore(alias, password, keystore);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
    }
 }

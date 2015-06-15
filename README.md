@@ -19,7 +19,7 @@ The configuration file must be a **.properties** file with the following mandato
 ``` properties
 #CONFIG EXAMPLE
 Name = Ettore
-StartDate = 16/06/2015
+StartDate = 16/06/2015 #Date format dd/MM/yyyy
 EndDate =
 Subject = Cryptox509
 ```
