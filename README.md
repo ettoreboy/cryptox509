@@ -19,9 +19,9 @@ The configuration file must be a **.properties** file with the following mandato
 ``` properties
 #CONFIG EXAMPLE
 Name = Ettore
-StartDate = 16/06/2015 #Date format dd/MM/yyyy
+#Date format dd/MM/yyyy
+StartDate = 16/06/2015
 EndDate =
-Subject = Cryptox509
 ```
 Date fields can be left empty, in that case the certificate will have a default **1 year** validity.
 When executed, it will ask for a password in order to store the private key.

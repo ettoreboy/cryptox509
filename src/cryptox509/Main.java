@@ -22,6 +22,9 @@ public class Main {
             case "-g": 
                 generateCert(args[1]);
              break;
+             
+            case "-c":
+             break;
             default: System.err.println("Not a valid command.");
                      System.exit(0);
         }

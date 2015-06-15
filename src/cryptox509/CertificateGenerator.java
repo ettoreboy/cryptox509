@@ -36,13 +36,14 @@ import org.apache.commons.codec.binary.Base64;
 import sun.security.x509.BasicConstraintsExtension;
 import sun.security.x509.CertificateExtensions;
 import sun.security.x509.CertificateIssuerName;
+import sun.security.x509.CertificateSubjectName;
 import sun.security.x509.X500Name;
 import sun.security.x509.X509CertImpl;
 import sun.security.x509.X509CertInfo;
 
 public class CertificateGenerator {
 
-    private String issuer, subject;
+    private String issuer;
     private Date startD, endD;
     private static X509Certificate chain;
     private final Date startDefault = new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000);//Default start date
@@ -52,7 +53,6 @@ public class CertificateGenerator {
         try {
             Properties values = getProperties(path);//Get config file
             issuer = values.getProperty("Name");
-            subject = values.getProperty("Subject");
             String start = values.getProperty("StartDate");
             String end = values.getProperty("EndDate");
 
@@ -72,7 +72,6 @@ public class CertificateGenerator {
             }
             System.out.println("########## Configuration loaded ##########");
             System.out.println("Issuer: "+issuer);
-            System.out.println("Subject: "+subject);
             System.out.println("Start Date: "+startD);
             System.out.println("End Date: "+endD);
             System.out.println("##########################################");
@@ -90,14 +89,6 @@ public class CertificateGenerator {
 
     public void setIssuer(String issuer) {
         this.issuer = issuer;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
-
-    public void setSubject(String subject) {
-        this.subject = subject;
     }
 
     public Date getStartDate() {
