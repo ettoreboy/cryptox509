@@ -4,7 +4,6 @@ package cryptox509;
  *
  * @author Ettore Ciprian <cipettaro@gmail.com>
  */
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -23,6 +22,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -36,7 +36,6 @@ import org.apache.commons.codec.binary.Base64;
 import sun.security.x509.BasicConstraintsExtension;
 import sun.security.x509.CertificateExtensions;
 import sun.security.x509.CertificateIssuerName;
-import sun.security.x509.CertificateSubjectName;
 import sun.security.x509.X500Name;
 import sun.security.x509.X509CertImpl;
 import sun.security.x509.X509CertInfo;
@@ -61,19 +60,19 @@ public class CertificateGenerator {
             } else {
                 startD = format.parse(start);
             }
-            if (end == null || end.isEmpty() ) { 
+            if (end == null || end.isEmpty()) {
                 //Add one year to start date
                 Calendar c = Calendar.getInstance();
                 c.setTime(startD);
                 c.add(Calendar.YEAR, 1);
                 endD = c.getTime();
-            }else {
+            } else {
                 endD = format.parse(end);
             }
             System.out.println("########## Configuration loaded ##########");
-            System.out.println("Issuer: "+issuer);
-            System.out.println("Start Date: "+startD);
-            System.out.println("End Date: "+endD);
+            System.out.println("Issuer: " + issuer);
+            System.out.println("Start Date: " + startD);
+            System.out.println("End Date: " + endD);
             System.out.println("##########################################");
 
         } catch (ParseException ex) {
@@ -81,6 +80,12 @@ public class CertificateGenerator {
         } catch (IOException ex) {
             Logger.getLogger(CertificateGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    /**
+     * Default Constructor
+     */
+    public CertificateGenerator() {
     }
 
     public String getIssuer() {
@@ -114,9 +119,17 @@ public class CertificateGenerator {
     public static void setChain(X509Certificate chain) {
         CertificateGenerator.chain = chain;
     }
-    
-    
 
+    /**
+     * Store the root certificate and the key in the jks keystore
+     *
+     * @param alias
+     * @param password
+     * @param keystore
+     * @param key
+     * @param chain
+     * @throws Exception
+     */
     public void storeKeyAndCertificate(String alias, char[] password, String keystore, Key key, X509Certificate[] chain) throws Exception {
         KeyStore keyStore = KeyStore.getInstance("jks");
         keyStore.load(null, null);
@@ -124,14 +137,15 @@ public class CertificateGenerator {
         keyStore.setKeyEntry(alias, key, password, chain);
         keyStore.store(new FileOutputStream(keystore), password);
     }
-    
+
     /**
      * Load private key from the keystore
+     *
      * @param alias
      * @param password
      * @param keystore
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     public Key loadKey(String alias, char[] password, String keystore) throws Exception {
         //Reload the keystore
@@ -152,10 +166,11 @@ public class CertificateGenerator {
 
     /**
      * Load and display cert and key from a keystore
+     *
      * @param alias
      * @param password
      * @param keystore
-     * @throws Exception 
+     * @throws Exception
      */
     public void loadAndDisplay(String alias, char[] password, String keystore) throws Exception {
         //Reload the keystore
@@ -180,10 +195,11 @@ public class CertificateGenerator {
 
     /**
      * Clear key store form the certificate
+     *
      * @param alias
      * @param password
      * @param keystore
-     * @throws Exception 
+     * @throws Exception
      */
     public void clearKeyStore(String alias, char[] password, String keystore) throws Exception {
         KeyStore keyStore = KeyStore.getInstance("jks");
@@ -194,10 +210,11 @@ public class CertificateGenerator {
 
     /**
      * Create a self signed certificate using the automatically generated key
+     *
      * @param cetrificate
      * @param issuerCertificate
      * @param issuerPrivateKey
-     * @return 
+     * @return
      */
     public X509Certificate createSignedCertificate(X509Certificate cetrificate, X509Certificate issuerCertificate, PrivateKey issuerPrivateKey) {
         try {
@@ -222,11 +239,13 @@ public class CertificateGenerator {
         return null;
     }
 
-    /***
+    /**
+     * *
      * Convert to PEM format a valid X509Certificate
+     *
      * @param cert
      * @return
-     * @throws CertificateEncodingException 
+     * @throws CertificateEncodingException
      */
     private static String convertToPem(X509Certificate cert) throws CertificateEncodingException {
         Base64 encoder = new Base64(64);
@@ -241,9 +260,10 @@ public class CertificateGenerator {
 
     /**
      * Write a X509 V3 certificate converted to PEM into a file
+     *
      * @param signedCertificate
      * @param path
-     * @throws IOException 
+     * @throws IOException
      */
     public void printCertificateToPEM(X509Certificate signedCertificate, String path) throws IOException {
         String pem = "";
@@ -263,8 +283,50 @@ public class CertificateGenerator {
     }
 
     /**
-     * Read configuration file.
-     * Must be in the same folder as the jar file, named 'config.properties'.
+     * Verify a self signed Certificate
+     *
+     * @param path
+     * @return
+     */
+    public boolean verifyCertificate(String path) {
+        try {
+            System.out.println("Verifying self signed certificate signature ...");
+            InputStream inStream = new FileInputStream(path);
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            X509Certificate cert = (X509Certificate) cf.generateCertificate(inStream);
+            inStream.close();
+            String subjectdn = cert.getSubjectDN().getName();
+            String issuerdn = cert.getIssuerDN().getName();
+            System.out.println("\nSubject Name:\r\n" + subjectdn);
+            System.out.println("\nIssuer Name:\r\n" + issuerdn);
+            
+            //Verifiy if issuer and subject are the same
+            System.out.println();
+            if (subjectdn.equals(issuerdn)) {
+                try {
+                    cert.verify(cert.getPublicKey());//Public key of the certificate must match
+                    System.out.println("Signature verified ✔");
+                } catch (Exception exc) {
+                    System.out.println("Failed to verify self-signed certificate X");
+                }
+                return true;
+            } else {
+                System.out.println("Issuer and and subject differs!");
+                System.out.println("Failed to verify self-signed certificate X");
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(CertificateGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (CertificateException ex) {
+            Logger.getLogger(CertificateGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CertificateGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
+    /**
+     * Read configuration file. Must be in the same folder as the jar file,
+     * named 'config.properties'.
      *
      * @return Properties
      * @throws IOException
@@ -273,9 +335,9 @@ public class CertificateGenerator {
 
         Properties prop = new Properties();
         String propFileName = "config.properties";
-       
+
         InputStream inputStream = new FileInputStream(path);
-        
+
         if (inputStream != null) {
             prop.load(inputStream);
         } else {

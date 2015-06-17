@@ -12,7 +12,7 @@ import sun.security.x509.X500Name;
  * @author Ettore Ciprian <cipettaro@gmail.com>
  */
 public class Main {
-    private static CertificateGenerator gen;
+    private static CertificateGenerator gen = new CertificateGenerator();
     private static final String alias = "mykey";
     private static final String keystore = "keys.jks";
     
@@ -24,12 +24,24 @@ public class Main {
              break;
              
             case "-c":
+                if(Paths.get(args[1]).toFile().canRead()){
+                gen.verifyCertificate(args[1]);
+                }else{
+                    System.err.println("Please provide a valid certificate path!");
+                }
              break;
             default: System.err.println("Not a valid command.");
+                     System.err.println("Possible usage:\n cryptox509.jar -g Path/to/config.properties.");
+                     System.err.println("                  cryptox509.jar -c Path/to/certificate.");
                      System.exit(0);
         }
     }
 
+    /**
+     * Initialize the CertificateGenerator with the configuration file parameters
+     * @param pathToConfig
+     * @return 
+     */
    private static CertificateGenerator init(String pathToConfig){
        
         if(Paths.get(pathToConfig).toFile().canRead()){
@@ -44,6 +56,10 @@ public class Main {
        
    }
    
+   /**
+    * Generate a x509 v3 certificate
+    * @param path 
+    */
    private static void generateCert(String path){
            gen = init(path);
         try {
