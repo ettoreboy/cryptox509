@@ -35,4 +35,6 @@ The tool will create two files, the **JKS** keystore and a readable **PEM** cert
 java -jar cryptox509.jar -c PATH/TO/certificate
 ```
 
-## Precompiled
+## Download
+A precompiled version can be found in [this repository]("dist.zip")
+Under th folder /test there will be examples of a config file and certificate generated with this tool.
