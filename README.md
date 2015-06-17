@@ -34,3 +34,5 @@ The tool will create two files, the **JKS** keystore and a readable **PEM** cert
 ``` bash
 java -jar cryptox509.jar -c PATH/TO/certificate
 ```
+
+## Precompiled
