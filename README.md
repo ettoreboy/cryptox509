@@ -36,5 +36,6 @@ java -jar cryptox509.jar -c PATH/TO/certificate
 ```
 
 ## Download
-A precompiled version can be found in [this repository](dist.zip)
+A precompiled version can be found in [this repository](https://github.com/platinumjesus/cryptox509/blob/master/dist.zip?raw=true)
+
 Under th folder /test there will be examples of a config file and certificate generated with this tool.
