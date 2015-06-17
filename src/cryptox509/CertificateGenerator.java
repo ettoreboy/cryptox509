@@ -52,7 +52,7 @@ public class CertificateGenerator {
         DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
         try {
             Properties values = getProperties(path);//Get config file
-            issuer = values.getProperty("Name");
+            issuer = values.getProperty("Issuer");
             String start = values.getProperty("StartDate");
             String end = values.getProperty("EndDate");
 
@@ -124,7 +124,39 @@ public class CertificateGenerator {
         keyStore.setKeyEntry(alias, key, password, chain);
         keyStore.store(new FileOutputStream(keystore), password);
     }
+    
+    /**
+     * Load private key from the keystore
+     * @param alias
+     * @param password
+     * @param keystore
+     * @return
+     * @throws Exception 
+     */
+    public Key loadKey(String alias, char[] password, String keystore) throws Exception {
+        //Reload the keystore
+        KeyStore keyStore = KeyStore.getInstance("jks");
+        keyStore.load(new FileInputStream(keystore), password);
 
+        Key key = keyStore.getKey(alias, password);
+
+        if (key instanceof PrivateKey) {
+            System.out.println("Private key parsed from keystore! ");
+            System.out.println(Utilities.toHex(key.getEncoded()));
+            return key;
+        } else {
+            System.err.println("Key is not the private key");
+            return null;
+        }
+    }
+
+    /**
+     * Load and display cert and key from a keystore
+     * @param alias
+     * @param password
+     * @param keystore
+     * @throws Exception 
+     */
     public void loadAndDisplay(String alias, char[] password, String keystore) throws Exception {
         //Reload the keystore
         KeyStore keyStore = KeyStore.getInstance("jks");
@@ -146,6 +178,13 @@ public class CertificateGenerator {
         }
     }
 
+    /**
+     * Clear key store form the certificate
+     * @param alias
+     * @param password
+     * @param keystore
+     * @throws Exception 
+     */
     public void clearKeyStore(String alias, char[] password, String keystore) throws Exception {
         KeyStore keyStore = KeyStore.getInstance("jks");
         keyStore.load(new FileInputStream(keystore), password);
@@ -153,6 +192,13 @@ public class CertificateGenerator {
         keyStore.store(new FileOutputStream(keystore), password);
     }
 
+    /**
+     * Create a self signed certificate using the automatically generated key
+     * @param cetrificate
+     * @param issuerCertificate
+     * @param issuerPrivateKey
+     * @return 
+     */
     public X509Certificate createSignedCertificate(X509Certificate cetrificate, X509Certificate issuerCertificate, PrivateKey issuerPrivateKey) {
         try {
             Principal CertIssuer = issuerCertificate.getSubjectDN();
@@ -176,6 +222,12 @@ public class CertificateGenerator {
         return null;
     }
 
+    /***
+     * Convert to PEM format a valid X509Certificate
+     * @param cert
+     * @return
+     * @throws CertificateEncodingException 
+     */
     private static String convertToPem(X509Certificate cert) throws CertificateEncodingException {
         Base64 encoder = new Base64(64);
         String cert_begin = "-----BEGIN CERTIFICATE-----\n";
@@ -187,6 +239,12 @@ public class CertificateGenerator {
         return pemCert;
     }
 
+    /**
+     * Write a X509 V3 certificate converted to PEM into a file
+     * @param signedCertificate
+     * @param path
+     * @throws IOException 
+     */
     public void printCertificateToPEM(X509Certificate signedCertificate, String path) throws IOException {
         String pem = "";
         try {
@@ -205,8 +263,8 @@ public class CertificateGenerator {
     }
 
     /**
-     * Read configuration File Must be in the same folder as the jar file, named
-     * 'config.properties'
+     * Read configuration file.
+     * Must be in the same folder as the jar file, named 'config.properties'.
      *
      * @return Properties
      * @throws IOException

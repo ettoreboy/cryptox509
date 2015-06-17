@@ -45,7 +45,7 @@ public class Main {
    }
    
    private static void generateCert(String path){
-            gen = init(path);
+           gen = init(path);
         try {
             
             //Generate ROOT certificate
@@ -54,7 +54,7 @@ public class Main {
             PrivateKey rootPrivateKey = keyGen.getPrivateKey();
 
             long validity =  gen.getEndDate().getTime() - gen.getStartDate().getTime();
-            X509Certificate rootCertificate = keyGen.getSelfCertificate(new X500Name("CN="+gen.getIssuer()), gen.getStartDate(), validity/1000);
+            X509Certificate rootCertificate = keyGen.getSelfCertificate(new X500Name(gen.getIssuer()), gen.getStartDate(), validity/1000);
             rootCertificate = gen.createSignedCertificate(rootCertificate, rootCertificate, rootPrivateKey);
             
             X509Certificate[] chain = new X509Certificate[1];
